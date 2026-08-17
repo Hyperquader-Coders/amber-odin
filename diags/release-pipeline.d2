@@ -1,0 +1,36 @@
+upstream: Upstream, monthly {
+  style.stroke-dash: 3
+  odin: "odin-lang/Odin\ndev-YYYY-MM\ncompiled linux-amd64 tarball"
+  ols: "DanielGavin/ols\nmaster (commit sha = the pin)"
+}
+
+fetch: "make deb-upstream" {
+  verify: "fetch_odin.py\nsha256 vs GitHub API digest" {shape: hexagon}
+  src: "fetch_ols.py\nsource tarball @ commit"
+}
+
+upstream.odin -> fetch.verify
+upstream.ols -> fetch.src
+
+build: {
+  compiler: "amber-odin deb\n/usr/lib/amber-odin, /usr/bin/odin\nDepends: clang"
+  lsp: "amber-ols deb\n/usr/lib/amber-ols, /usr/bin/ols\nDepends: amber-odin"
+  compiler -> lsp: "compiled WITH this exact compiler" {style.bold: true}
+}
+
+fetch.verify -> build.compiler
+fetch.src -> build.lsp
+
+checks: "make check + check-ols" {
+  style.fill: "#fff4e0"
+  run: "packaged odin runs:\nodin version"
+  lsp: "packaged ols answers a real\nLSP initialize with the right banner"
+}
+
+build -> checks
+
+gh: "GitHub release\ntag = upstream tag\n(monthly-release.yml)" {shape: cloud}
+apt: "amberlinux-apt archive\nmake add-suite via deb-path" {shape: package}
+
+checks -> gh: CI
+checks -> apt: local

@@ -1,0 +1,34 @@
+# This package is the official Odin compiler release, repackaged unchanged. The
+# tags below are all properties of upstream's own build and tree: rewriting any
+# of them would mean shipping something other than what upstream published, and
+# the sha256 check in scripts/fetch_odin.py exists to guarantee we do not.
+
+# vendor/ carries prebuilt libraries for every platform Odin supports, so an
+# amd64 package legitimately contains arm64 and darwin objects.
+amber-odin: binary-from-other-architecture
+amber-odin: no-code-sections
+amber-odin: statically-linked-binary
+amber-odin: executable-not-elf-or-script
+
+# The compiler binary and the vendored libraries are upstream's, built and
+# stripped (or not) by them.
+amber-odin: unstripped-binary-or-object
+amber-odin: embedded-library
+amber-odin: missing-dependency-on-libc
+
+# core/ and vendor/ are a source tree, shipped as the compiler's standard
+# library — scripts in it are read, not run, and it keeps upstream's own files.
+amber-odin: script-not-executable
+amber-odin: unusual-interpreter
+amber-odin: package-contains-vcs-control-file
+amber-odin: unpack-message-for-deb-data
+
+# The compiler is not a command a user reads a man page for; `odin help` is its
+# documentation, and upstream ships no roff.
+amber-odin: no-manual-page
+
+# Upstream's LICENSE is BSD-3 without a "Copyright (c)" line lintian recognises.
+amber-odin: copyright-without-copyright-notice
+
+# Not a Debian upload; there is no bug tracker entry to close.
+amber-odin: initial-upload-closes-no-bugs

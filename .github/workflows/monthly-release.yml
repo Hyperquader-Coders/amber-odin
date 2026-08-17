@@ -1,0 +1,74 @@
+# Monthly: fetch the newest compiled upstream Odin release, package it as
+# amber-odin_<YYYY.MM+dev>-1_amd64.deb, and publish it as a GitHub release
+# tagged with the upstream tag. Skips cleanly when that tag is already
+# released here. Odin tags near the start of each month; the second cron
+# run catches late tags.
+name: monthly-release
+
+on:
+  schedule:
+    - cron: '30 6 2,9 * *'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Upstream tag (dev-YYYY-MM); empty = latest'
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve upstream tag
+        id: tag
+        env:
+          TAG_INPUT: ${{ inputs.tag }}
+        run: |
+          if [ -n "$TAG_INPUT" ]; then
+            tag="$TAG_INPUT"
+          else
+            tag=$(curl -s https://api.github.com/repos/odin-lang/Odin/releases/latest | jq -r .tag_name)
+          fi
+          case "$tag" in dev-20[0-9][0-9]-[01][0-9]) ;; *)
+            echo "unexpected upstream tag: $tag" >&2; exit 1;;
+          esac
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Check for existing release
+        id: exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "${{ steps.tag.outputs.tag }}" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "release ${{ steps.tag.outputs.tag }} already published; nothing to do"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install build dependencies
+        if: steps.exists.outputs.exists == 'false'
+        run: sudo apt-get update && sudo apt-get install -y dpkg-dev clang
+
+      - name: Fetch upstream, package, check
+        if: steps.exists.outputs.exists == 'false'
+        run: make deb-upstream TAG='${{ steps.tag.outputs.tag }}'
+
+      - name: Publish GitHub release
+        if: steps.exists.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          debs=$(make -s deb-path)
+          ols_commit=$(cat build/ols-src/COMMIT)
+          gh release create '${{ steps.tag.outputs.tag }}' $debs \
+            -R "$GITHUB_REPOSITORY" \
+            --title 'amber-odin ${{ steps.tag.outputs.tag }}' \
+            --notes "Debian packages for Odin release ${{ steps.tag.outputs.tag }} (linux amd64):
+
+          - amber-odin: the official compiler, sha256-verified against the upstream release digest. Installs to /usr/lib/amber-odin, symlinks /usr/bin/odin.
+          - amber-ols: the ols language server (DanielGavin/ols @ $ols_commit) compiled from source with this exact compiler. Installs to /usr/lib/amber-ols, symlinks /usr/bin/ols."

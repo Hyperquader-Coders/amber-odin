@@ -1,0 +1,18 @@
+Package: amber-odin
+Version: @VERSION@-@REVISION@
+Architecture: @ARCH@
+Maintainer: Hyperquader <hyperquader@gmail.com>
+Installed-Size: @SIZE@
+Depends: @DEPENDS@
+Recommends: git
+Provides: odin-compiler
+Conflicts: odin
+Section: devel
+Priority: optional
+Homepage: https://odin-lang.org/
+Description: Odin compiler repackaged for Amber projects
+ This package installs the official Odin compiler tree under /usr/lib/amber-odin
+ and exposes /usr/bin/odin for Amber and kattery development builds.
+ .
+ It is named amber-odin to avoid colliding conceptually with Ubuntu's unrelated
+ odin package for magnetic resonance sequence tooling.

@@ -1,0 +1,15 @@
+Package: amber-ols
+Version: @VERSION@-@REVISION@
+Architecture: @ARCH@
+Maintainer: Hyperquader <hyperquader@gmail.com>
+Installed-Size: @SIZE@
+Depends: @DEPENDS@
+Section: devel
+Priority: optional
+Homepage: https://github.com/DanielGavin/ols
+Description: Odin language server (ols) built against amber-odin
+ The ols language server compiled from source with the exact Odin compiler
+ shipped in the matching amber-odin package, so the pair cannot skew. The
+ packaged ols commit is recorded in the changelog.
+ .
+ Installs the server tree under /usr/lib/amber-ols and exposes /usr/bin/ols.
