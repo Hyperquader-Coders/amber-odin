@@ -59,7 +59,10 @@ deb-ols: fetch-ols
 	install -d out/ols-deb/usr/bin
 	ln -s ../lib/amber-ols/ols out/ols-deb/usr/bin/ols
 	install -D -m644 packaging/copyright-ols out/ols-deb/usr/share/doc/amber-ols/copyright
-	printf 'amber-ols (%s-%s) noble; urgency=medium\n\n  * ols commit %s built with the matching amber-odin compiler.\n\n -- Hyperquader <hyperquader@gmail.com>  %s\n' \
+	install -D -m644 packaging/lintian-overrides-ols \
+		out/ols-deb/usr/share/lintian/overrides/amber-ols
+	# Wrapped: lintian caps a changelog line at 80 and the commit alone is 40.
+	printf 'amber-ols (%s-%s) noble; urgency=medium\n\n  * ols commit %s,\n    built with the matching amber-odin compiler.\n\n -- Hyperquader <hyperquader@gmail.com>  %s\n' \
 		'$(VERSION)' '$(REVISION)' "$$(cat build/ols-src/COMMIT)" "$$(date -R)" \
 		| gzip -9n > out/ols-deb/usr/share/doc/amber-ols/changelog.Debian.gz
 	mkdir -p out/ols-deb/DEBIAN

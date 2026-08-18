@@ -1,0 +1,11 @@
+# ols is the Odin Language Server, built from upstream's source against the
+# matching compiler in this package set. These two are properties of how the
+# suite publishes, not defects to fix.
+
+# `ols` is started by an editor over stdio, never typed at a prompt, and upstream
+# ships no roff. A man page would document a command nobody invokes by hand. It
+# becomes wrong if ols ever grows a CLI a person uses directly.
+amber-ols: no-manual-page
+
+# Not a Debian upload; there is no bug tracker entry to close.
+amber-ols: initial-upload-closes-no-bugs
